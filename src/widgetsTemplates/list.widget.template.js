@@ -29,14 +29,14 @@ class myWidget extends baseWidget(EventEmitter) {
         return null
       }
 
-      // clear log box of previous logs
-      this.clearItemLogs()
-
       // get logs for the items
       this.getItemLogs(itemId, (err, stream) => {
         if (err) {
           return null
         }
+
+        // clear log box of previous logs
+        this.clearItemLogs()
 
         let str
         if (stream && stream.pipe) {
@@ -67,10 +67,17 @@ class myWidget extends baseWidget(EventEmitter) {
       }
     })
 
-    const searchInput = this.widgetsRepo.get('searchInput')
-    searchInput.on('keypress', (data) => {
-      this.filterList(data)
-    })
+    if (this.widgetsRepo && this.widgetsRepo.has('searchInput')) {
+      const searchInput = this.widgetsRepo.get('searchInput')
+
+      searchInput.on('keypress', (data) => {
+        this.filterList(data)
+      })
+
+      searchInput.on('exitSearch', () => {
+        this.focus()
+      })
+    }
   }
 
   getWidget () {

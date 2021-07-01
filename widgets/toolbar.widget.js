@@ -36,6 +36,18 @@ class myWidget extends baseWidget(EventEmitter) {
         keys: ['i'],
         callback: () => { this.emit('key', 'i') }
       },
+      'search': {
+        keys: ['/'],
+        callback: () => { this.emit('key', '/') }
+      }
+    }
+
+    baseCommands[`copy ${this.mode.slice(0, -1)} id`] = {
+      keys: ['c'],
+      callback: () => { this.emit('key', 'c') }
+    }
+
+    const logCommands = {
       'logs': {
         keys: ['[RETURN]'],
         callback: () => { this.emit('key', '[RETURN]') }
@@ -43,10 +55,6 @@ class myWidget extends baseWidget(EventEmitter) {
       'expand logs': {
         keys: ['-'],
         callback: () => { this.emit('key', '-') }
-      },
-      'copy container id': {
-        keys: ['c'],
-        callback: () => { this.emit('key', 'c') }
       }
     }
 
@@ -66,14 +74,23 @@ class myWidget extends baseWidget(EventEmitter) {
       'menu': {
         keys: ['m'],
         callback: () => { this.emit('key', 'm') }
-      },
-      'search': {
-        keys: ['/'],
-        callback: () => { this.emit('key', '/') }
       }
     }
 
-    const commands = this.mode === MODES.container ? Object.assign({}, baseCommands, containerCommands) : baseCommands
+    const imageCommands = {
+      'remove': {
+        keys: ['r'],
+        callback: () => { this.emit('key', 'r') }
+      }
+    }
+
+    const commandExtension = {}
+
+    commandExtension[MODES.container] = Object.assign({}, containerCommands, logCommands)
+    commandExtension[MODES.service] = Object.assign({}, logCommands)
+    commandExtension[MODES.image] = imageCommands
+
+    const commands = Object.assign({}, baseCommands, commandExtension[this.mode])
 
     return this.grid.gridObj.set(...this.grid.gridLayout, this.blessed.listbar, {
       keys: false,

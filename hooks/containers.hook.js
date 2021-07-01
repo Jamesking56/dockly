@@ -1,10 +1,8 @@
 'use strict'
 
-const EventEmitter = require('events')
-const baseWidget = require('../src/baseWidget')
-const clipboardy = require('clipboardy')
+const baseHook = require('../src/widgetsTemplates/base.hook.template')
 
-class hook extends baseWidget(EventEmitter) {
+class hook extends baseHook {
   init () {
     // on startup we first emit data from the docker server
     this.getFreshData((err, data) => {
@@ -45,7 +43,26 @@ class hook extends baseWidget(EventEmitter) {
       }
 
       if (keyString === 'c') {
-        this.copyContainerIdToClipboard()
+        this.copyItemIdToClipboard()
+      }
+    })
+
+    if (this.widgetsRepo.has('containerLogs') && this.widgetsRepo.has('containerList')) {
+      this.setupSwitchFocus()
+    }
+  }
+
+  setupSwitchFocus () {
+    const containerLogs = this.widgetsRepo.get('containerLogs')
+    const containerList = this.widgetsRepo.get('containerList')
+    const screen = containerLogs.screen
+
+    this.toggleWidgetFocus = true
+
+    screen.on('keypress', (ch, key) => {
+      if (key && key.name === 'tab') {
+        this.toggleWidgetFocus ? containerLogs.focus() : containerList.focus()
+        this.toggleWidgetFocus = !this.toggleWidgetFocus
       }
     })
   }
@@ -148,20 +165,12 @@ class hook extends baseWidget(EventEmitter) {
     }
   }
 
-  copyContainerIdToClipboard () {
-    if (this.widgetsRepo && this.widgetsRepo.has('containerList')) {
-      const containerId = this.widgetsRepo.get('containerList').getSelectedContainer()
-      if (containerId) {
-        clipboardy.writeSync(containerId)
-
-        const actionStatus = this.widgetsRepo.get('actionStatus')
-        const message = `Container Id ${containerId} was copied to the clipboard`
-
-        actionStatus.emit('message', {
-          message: message
-        })
-      }
+  getSelectedItem () {
+    if (!this.widgetsRepo.has('containerList')) {
+      return null
     }
+
+    return this.widgetsRepo.get('containerList').getSelectedContainer()
   }
 }
 

@@ -26,6 +26,7 @@ const CONTAINERS_GRID_LAYOUT = {
 const SERVICES_GRID_LAYOUT = {
   'actionsMenu': [4, 4, 4, 4],
   'actionStatus': [6, 0, 1, 10],
+  'searchInput': [11, 0, 1, 12],
   'help': [4, 4, 4, 4],
   'servicesInfo': [2, 2, 8, 8],
   'servicesList': [0, 0, 6, 10],
@@ -34,6 +35,21 @@ const SERVICES_GRID_LAYOUT = {
   'servicesVsImages': [2, 10, 2, 2],
   'toolbar': [11, 0, 1, 12]
 }
+
+const IMAGES_GRID_LAYOUT = {
+  'imageInfo': [2, 2, 8, 8],
+  'imageList': [0, 0, 6, 10],
+  'searchInput': [11, 0, 1, 12],
+  'actionStatus': [6, 0, 1, 10],
+  'help': [4, 4, 4, 4],
+  'toolbar': [11, 0, 1, 12],
+  'imageUtilization': [0, 10, 2, 2]
+}
+
+const GRID_LAYOUT = {}
+GRID_LAYOUT[MODES.container] = CONTAINERS_GRID_LAYOUT
+GRID_LAYOUT[MODES.service] = SERVICES_GRID_LAYOUT
+GRID_LAYOUT[MODES.image] = IMAGES_GRID_LAYOUT
 
 class screen {
   constructor (utils = new Map()) {
@@ -104,7 +120,7 @@ class screen {
   }
 
   initWidgets () {
-    const layout = this.mode === MODES.container ? CONTAINERS_GRID_LAYOUT : SERVICES_GRID_LAYOUT
+    const layout = GRID_LAYOUT[this.mode]
     for (let [widgetName, WidgetObject] of this.assets.get('widgets').entries()) {
       if (layout[widgetName]) {
         let widget = new WidgetObject({
@@ -121,6 +137,13 @@ class screen {
         this.widgets.set(widgetName, widget)
         this.widgetsRepository.set(widgetName, widget)
       }
+    }
+  }
+
+  clearWidgets () {
+    for (let [widgetName] of this.assets.get('widgets').entries()) {
+      this.widgets.delete(widgetName)
+      this.widgetsRepository.delete(widgetName)
     }
   }
 
@@ -163,14 +186,6 @@ class screen {
   }
 
   registerEvents () {
-    this.screen.on('keypress', (ch, key) => {
-      if (key && key.name === 'tab') {
-        this.toggleWidgetFocus ? this.widgetsRepository.get('containerLogs').focus() : this.widgetsRepository.get('containerList').focus()
-        this.toggleWidgetFocus = !this.toggleWidgetFocus
-        this.screen.render()
-      }
-    })
-
     this.screen.on('element focus', (curr, old) => {
       if (old && old.border) {
         old.style.border.fg = 'default'
@@ -190,6 +205,7 @@ class screen {
 
     this.screen.key('v', () => {
       this.clearHooks()
+      this.clearWidgets()
       this.toggleMode()
       this.screen.destroy()
       this.init()

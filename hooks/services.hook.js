@@ -1,9 +1,8 @@
 'use strict'
 
-const EventEmitter = require('events')
-const baseWidget = require('../src/baseWidget')
+const baseHook = require('../src/widgetsTemplates/base.hook.template')
 
-class hook extends baseWidget(EventEmitter) {
+class hook extends baseHook {
   init () {
     // on startup we first emit data from the docker server
     this.getFreshData((err, data) => {
@@ -33,6 +32,29 @@ class hook extends baseWidget(EventEmitter) {
           this.emit('servicesAndImagesList', data)
         })
       }
+
+      if (keyString === 'c') {
+        this.copyItemIdToClipboard()
+      }
+    })
+
+    if (this.widgetsRepo.has('servicesLogs') && this.widgetsRepo.has('servicesList')) {
+      this.setupSwitchFocus()
+    }
+  }
+
+  setupSwitchFocus () {
+    const containerLogs = this.widgetsRepo.get('servicesLogs')
+    const containerList = this.widgetsRepo.get('servicesList')
+    const screen = containerLogs.screen
+
+    this.toggleWidgetFocus = true
+
+    screen.on('keypress', (ch, key) => {
+      if (key && key.name === 'tab') {
+        this.toggleWidgetFocus ? containerLogs.focus() : containerList.focus()
+        this.toggleWidgetFocus = !this.toggleWidgetFocus
+      }
     })
   }
 
@@ -59,6 +81,14 @@ class hook extends baseWidget(EventEmitter) {
         return cb(null, { services, images })
       })
     })
+  }
+
+  getSelectedItem () {
+    if (!this.widgetsRepo.has('servicesList')) {
+      return null
+    }
+
+    return this.widgetsRepo.get('servicesList').getSelectedService()
   }
 }
 

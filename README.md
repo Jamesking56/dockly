@@ -2,7 +2,7 @@
 	<br>
   <img width="200" src="https://user-images.githubusercontent.com/316371/28937414-67ee5ffa-7893-11e7-95f9-5059cacf9170.png">
 	<br>
- Immersive terminal interface for managing docker containers and services
+ Immersive terminal interface for managing docker containers, services and images
 </p>
 
 
@@ -110,6 +110,14 @@ Dockly requires Node.js v7.6 and above
 
 Follow the steps [in this comment](https://github.com/lirantal/dockly/issues/50#issuecomment-536190949) to enable VT100 support on the settings for the window
 
+3. Icons not working properly 
+
+set `LANG` and `LC_ALL` to c.UTF-8 like so
+```bash
+export LANG=C.UTF-8
+export LC_ALL=C.UTF-8
+```
+for more info please see [this issue](https://github.com/yaronn/blessed-contrib/issues/111)
 
 # Author
 Liran Tal <liran.tal@gmail.com>
